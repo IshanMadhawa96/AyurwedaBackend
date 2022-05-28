@@ -19,6 +19,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AyurwedaBackend.Models;
 using Microsoft.AspNetCore.Identity;
+using AyurwedaBackend.Helpers;
+using static AyurwedaBackend.Services.Email.EmailService;
+using AyurwedaBackend.Services.Email;
 
 namespace AyurwedaBackend
 {
@@ -39,7 +42,11 @@ namespace AyurwedaBackend
             Configuration.GetConnectionString("DefaultConnection")
             ));
             //For Entitiy Framework
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(/*opt =>
+            {
+                //ADD EMAIL CONFIRM IS REQUIRED
+                opt.SignIn.RequireConfirmedEmail = true;   
+            }*/)
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
             //JWT SERVICE
@@ -48,6 +55,7 @@ namespace AyurwedaBackend
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                
             }).AddJwtBearer(option =>
             {
                 option.SaveToken = true;
@@ -61,9 +69,23 @@ namespace AyurwedaBackend
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                 };
             });
+
+           /* services.Configure<IdentityOptions>(opts =>
+            {
+                opts.User.RequireUniqueEmail = true;
+                //opts.Password.RequiredLength = 8;
+                opts.SignIn.RequireConfirmedEmail = true;
+            });*/
+
             //controllers
             services.AddControllers();
             services.AddTransient<IAccountRepository,AccountRepository>();
+
+            // configure strongly typed settings object
+            services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
+
+            // configure DI for application services
+            services.AddScoped<IEmailService, EmailService>();
             //for sawaggerui
             services.AddSwaggerGen(c =>
             {

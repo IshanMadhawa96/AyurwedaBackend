@@ -9,5 +9,8 @@ namespace AyurwedaBackend.Repository
     {
         Task<IdentityResult> SignUpAsync(SignUpModel signupmodel);
         Task<string> LoginAsync(LoginViewModel loginViewModel);
+        Task<IdentityResult> EmailConfirmAsync(ConfirmEmail confirmEmail);
+        Task<string> ForgetPasswordAsync(ForgetPassword forgetPassword);
+        Task<string> ResetPasswordAsync(ResetPassword resetPassword);
     }
 }
